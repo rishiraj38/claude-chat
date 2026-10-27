@@ -1,0 +1,30 @@
+# Optional: publishes public/ to GitHub Pages as a static site.
+# In this mode there is no server, so the page asks for your API key in the browser
+# (stored only in that browser's localStorage). Do NOT put the key in a secret here —
+# anything baked into a static site is visible to every visitor.
+name: Deploy static UI to GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+      - id: deployment
+        uses: actions/deploy-pages@v4

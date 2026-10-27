@@ -1,0 +1,13 @@
+{
+  "name": "claude-chat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Claude-style chat UI with artifacts, backed by your own Anthropic API key",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
