@@ -201,6 +201,7 @@ a { color: var(--accent); }
 #artpanel .foot .vers { flex: 1; }
 
 /* ---------- Settings modal ---------- */
+.modal[hidden] { display: none; }
 .modal { position: fixed; inset: 0; background: rgba(20,18,12,.45); display: grid; place-items: center; z-index: 50; padding: 20px; }
 .modal .sheet { width: min(560px, 100%); max-height: 90vh; overflow-y: auto; background: var(--bg); border-radius: 16px; border: 1px solid var(--line); box-shadow: var(--shadow); padding: 22px 24px; }
 .sheet h2 { font-family: var(--font-display); font-weight: 500; margin: 0 0 14px; font-size: 22px; }
