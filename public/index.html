@@ -68,6 +68,7 @@ a { color: var(--accent); }
 #app {
   display: grid;
   grid-template-columns: var(--sb, 272px) minmax(0, 1fr) var(--ap, 0px);
+  grid-template-rows: minmax(0, 1fr);
   height: 100%;
   transition: grid-template-columns .25s ease;
 }
@@ -105,14 +106,14 @@ a { color: var(--accent); }
 .dot.bad { background: var(--danger); }
 
 /* ---------- Main ---------- */
-#main { display: flex; flex-direction: column; min-width: 0; position: relative; }
+#main { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; position: relative; overflow: hidden; }
 #topbar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--bg); }
 #topbar .spacer { flex: 1; }
 .pill { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); font-size: 14px; color: var(--fg); max-width: 100%; }
 .pill select { background: transparent; border: 0; padding: 0; max-width: 220px; cursor: pointer; }
 .pill .k { color: var(--fg-3); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
 
-#scroll { flex: 1; overflow-y: auto; scroll-behavior: smooth; }
+#scroll { flex: 1; min-height: 0; overflow-y: auto; scroll-behavior: smooth; }
 #thread { max-width: 780px; margin: 0 auto; padding: 24px 20px 40px; display: flex; flex-direction: column; gap: 22px; }
 .empty { margin: auto; max-width: 640px; padding: 12vh 20px 20px; text-align: center; }
 .empty h1 { font-family: var(--font-display); font-weight: 400; font-size: clamp(28px, 4vw, 40px); margin: 0 0 10px; letter-spacing: -.01em; text-wrap: balance; }
@@ -171,7 +172,7 @@ a { color: var(--accent); }
 .errbox { border: 1px solid var(--danger); color: var(--danger); background: color-mix(in srgb, var(--danger) 8%, transparent); border-radius: 10px; padding: 10px 14px; font-size: 14px; white-space: pre-wrap; }
 
 /* ---------- Composer ---------- */
-#composer { padding: 10px 20px 18px; background: linear-gradient(to top, var(--bg) 70%, transparent); }
+#composer { flex: none; padding: 10px 20px 18px; background: linear-gradient(to top, var(--bg) 70%, transparent); }
 #composer .box { max-width: 780px; margin: 0 auto; border: 1px solid var(--line); border-radius: 18px; background: var(--card); box-shadow: var(--shadow); padding: 10px 12px 8px; }
 #composer textarea { width: 100%; border: 0; background: transparent; resize: none; max-height: 240px; min-height: 26px; padding: 4px 6px; line-height: 1.5; outline: none; }
 #composer .row { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
