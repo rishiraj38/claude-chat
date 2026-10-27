@@ -99,6 +99,19 @@ a { color: var(--accent); }
 .chatitem:hover { background: var(--bg-3); }
 .chatitem .t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; text-align: left; padding: 6px 0; font-size: 14.5px; }
 .chatitem .del { opacity: 0; width: 28px; height: 28px; }
+.artlist { border-top: 1px solid var(--line); padding: 0 8px 8px; max-height: 42%; display: flex; flex-direction: column; }
+.artlist[hidden] { display: none; }
+.artlist .label.toggle { width: 100%; display: flex; align-items: center; justify-content: space-between; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-3); padding: 10px 8px 6px; text-align: left; }
+.artlist .label.toggle .count { font-size: 11px; background: var(--bg-3); border-radius: 999px; padding: 1px 7px; color: var(--fg-2); letter-spacing: 0; }
+.artlist .items { overflow-y: auto; min-height: 0; }
+.artlist.collapsed .items { display: none; }
+.artitem { width: 100%; display: flex; align-items: center; gap: 9px; border-radius: 8px; padding: 6px 8px; color: var(--fg-2); text-align: left; }
+.artitem:hover, .artitem.active { background: var(--bg-3); color: var(--fg); }
+.artitem .ic { width: 26px; height: 26px; border-radius: 7px; background: var(--bg); border: 1px solid var(--line); display: grid; place-items: center; flex: none; }
+.artitem .ic svg { width: 14px; height: 14px; }
+.artitem .tt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+.artitem .st { font-size: 11.5px; color: var(--fg-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.artitem.live .st::after { content: " · generating…"; }
 .chatitem:hover .del, .chatitem.active .del { opacity: 1; }
 #sidebar .bottom { border-top: 1px solid var(--line); padding: 10px 12px; font-size: 13px; color: var(--fg-2); display: flex; gap: 8px; align-items: center; white-space: nowrap; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fg-3); flex: none; }
@@ -246,6 +259,10 @@ a { color: var(--accent); }
       New chat
     </button>
     <div class="chatlist" id="chatList"></div>
+    <div class="artlist" id="artList" hidden>
+      <button class="label toggle" id="artListToggle" aria-expanded="true"><span>Artifacts</span><span class="count" id="artCount"></span></button>
+      <div class="items" id="artItems"></div>
+    </div>
     <div class="bottom"><span class="dot" id="statusDot"></span><span id="statusText">Checking connection…</span></div>
   </aside>
 
@@ -556,7 +573,7 @@ function typeLabel(p) {
 let currentArt = null; let artTab = "preview";
 function openArtifact(p) {
   currentArt = p;
-  $("#app").classList.add("ap-open");
+  $("#app").classList.add("ap-open"); renderArtList();
   $("#artTitle").textContent = p.title;
   $("#artMeta").textContent = `${typeLabel(p)} · ${p.identifier}${p.live ? " · generating…" : ""}`;
   const previewable = ["text/html", "image/svg+xml", "application/vnd.ant.react", "text/markdown"].includes(p.type);
@@ -614,7 +631,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(
 }
 $("#tabPreview").onclick = () => { artTab = "preview"; showArtTab(); };
 $("#tabCode").onclick = () => { artTab = "code"; showArtTab(); };
-$("#artClose").onclick = () => $("#app").classList.remove("ap-open");
+$("#artClose").onclick = () => { $("#app").classList.remove("ap-open"); renderArtList(); };
 $("#artCopy").onclick = () => currentArt && copyText(currentArt.content).then(() => toast("Copied source"));
 $("#artDownload").onclick = () => {
   const p = currentArt; if (!p) return;
@@ -646,7 +663,47 @@ $("#sbClose").onclick = () => $("#app").classList.add("sb-closed");
 $("#sbOpen").onclick = () => $("#app").classList.toggle("sb-closed");
 if (innerWidth <= 860) $("#app").classList.add("sb-closed");
 
-function renderAll() { renderChatList(); renderThread(); scroller.scrollTop = scroller.scrollHeight; }
+/* ---------- artifact list (sidebar) ----------
+   One row per artifact identifier per chat, showing the latest version. */
+function allArtifacts() {
+  const out = [];
+  [...chats].sort((a, b) => b.updatedAt - a.updatedAt).forEach((c) => {
+    const seen = new Map();
+    c.messages.forEach((m, i) => {
+      if (m.role !== "assistant") return;
+      splitContent(m.content).forEach((p) => { if (p.kind === "artifact") seen.set(p.identifier, { part: p, chat: c, msgIndex: i }); });
+    });
+    // most recently updated artifact first within a chat
+    [...seen.values()].reverse().forEach((a) => out.push(a));
+  });
+  return out;
+}
+function renderArtList() {
+  const wrap = $("#artList"), items = $("#artItems"); items.innerHTML = "";
+  const arts = allArtifacts();
+  wrap.hidden = arts.length === 0;
+  $("#artCount").textContent = arts.length;
+  arts.forEach((a) => {
+    const p = a.part;
+    const b = el("button", "artitem" + (p.live ? " live" : "") + (currentArt && currentArt.identifier === p.identifier && a.chat.id === activeId && $("#app").classList.contains("ap-open") ? " active" : ""));
+    b.innerHTML = `<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div><div style="min-width:0"><div class="tt"></div><div class="st"></div></div>`;
+    b.querySelector(".tt").textContent = p.title;
+    b.querySelector(".st").textContent = typeLabel(p) + (a.chat.id !== activeId ? " · " + (a.chat.title || "New chat") : "");
+    b.title = p.title + (a.chat.id !== activeId ? " — in “" + (a.chat.title || "New chat") + "”" : "");
+    b.onclick = () => {
+      if (a.chat.id !== activeId) { activeId = a.chat.id; saveChats(); renderAll(); }
+      openArtifact(p);
+      if (innerWidth <= 860) $("#app").classList.add("sb-closed");
+    };
+    items.appendChild(b);
+  });
+}
+$("#artListToggle").onclick = () => {
+  const w = $("#artList"); w.classList.toggle("collapsed");
+  $("#artListToggle").setAttribute("aria-expanded", String(!w.classList.contains("collapsed")));
+};
+
+function renderAll() { renderChatList(); renderArtList(); renderThread(); scroller.scrollTop = scroller.scrollHeight; }
 
 /* ---------- transport ---------- */
 async function apiFetch(path, opts = {}) {
@@ -775,7 +832,7 @@ async function runAssistant(chat) {
   sendBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>`;
 
   const blockTypes = {}; let raf = 0;
-  const paint = () => { raf = 0; const stick = nearBottom(); fillAssistant(node, am); if (stick) scroller.scrollTop = scroller.scrollHeight; };
+  let lastArtSig = ""; const paint = () => { raf = 0; const stick = nearBottom(); fillAssistant(node, am); const sig = (am.content.match(/<artifact\b[^>]*>/g) || []).join("|"); if (sig !== lastArtSig) { lastArtSig = sig; renderArtList(); } if (stick) scroller.scrollTop = scroller.scrollHeight; };
   const schedule = () => { if (!raf) raf = requestAnimationFrame(paint); };
 
   try {
@@ -797,7 +854,7 @@ async function runAssistant(chat) {
     streaming = null; cancelAnimationFrame(raf);
     sendBtn.classList.remove("stop");
     sendBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg>`;
-    chat.updatedAt = Date.now(); saveChats(); fillAssistant(node, am); renderChatList(); autosize();
+    chat.updatedAt = Date.now(); saveChats(); fillAssistant(node, am); renderChatList(); renderArtList(); autosize();
     // if the artifact panel is showing an artifact from this message, refresh it
     if (currentArt && $("#app").classList.contains("ap-open")) {
       const fresh = splitContent(am.content).find((p) => p.kind === "artifact" && p.identifier === currentArt.identifier);
