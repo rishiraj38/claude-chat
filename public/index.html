@@ -322,6 +322,7 @@ a { color: var(--accent); }
       <div class="title" id="artTitle">Artifact</div>
       <div class="tabs"><button id="tabPreview" class="on">Preview</button><button id="tabCode">Code</button></div>
       <button class="iconbtn" id="artCopy" title="Copy source" aria-label="Copy source"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></button>
+      <button class="iconbtn" id="artShare" title="Share link" aria-label="Share link"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></button>
       <button class="iconbtn" id="artDownload" title="Download" aria-label="Download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></button>
       <button class="iconbtn" id="artClose" title="Close" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
@@ -637,6 +638,29 @@ ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(
   }
   return `<pre>${escapeHtml(p.content)}</pre>`;
 }
+/* ---------- share link ----------
+   The artifact is deflated + base64url-encoded into the URL fragment of share.html.
+   Nothing is uploaded anywhere; the link itself carries the artifact. */
+async function encodeShare(p) {
+  const json = JSON.stringify({ v: 1, t: p.type, l: p.language || "", n: p.title, c: p.content });
+  const stream = new Blob([json]).stream().pipeThrough(new CompressionStream("deflate-raw"));
+  const buf = new Uint8Array(await new Response(stream).arrayBuffer());
+  let bin = ""; for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode.apply(null, buf.subarray(i, i + 0x8000));
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+$("#artShare").onclick = async () => {
+  const p = currentArt; if (!p) return;
+  if (p.live) return toast("Wait until it finishes generating");
+  if (!("CompressionStream" in window)) return toast("Sharing needs a newer browser");
+  try {
+    const payload = await encodeShare(p);
+    const url = new URL("share.html", location.href); url.hash = payload;
+    const link = url.toString();
+    await copyText(link);
+    toast(link.length > 30000 ? "Link copied (very long; may not paste in some apps)" : "Share link copied");
+    if (navigator.share && innerWidth <= 860) navigator.share({ title: p.title, url: link }).catch(() => {});
+  } catch (e) { console.error(e); toast("Couldn't build the link"); }
+};
 $("#tabPreview").onclick = () => { artTab = "preview"; showArtTab(); };
 $("#tabCode").onclick = () => { artTab = "code"; showArtTab(); };
 $("#artClose").onclick = () => { $("#app").classList.remove("ap-open"); renderArtList(); };

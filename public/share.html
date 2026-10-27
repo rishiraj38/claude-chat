@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared artifact</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link id="hlLight" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hlDark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" disabled>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+:root {
+  --bg: #faf9f5; --bg-2: #f3f1ea; --bg-3: #e9e6dc; --fg: #2a2a26; --fg-2: #6b6a62; --fg-3: #9c9a90;
+  --line: #e2dfd4; --accent: #d97757; --accent-ink: #fff; --card: #fff;
+  --font-display: "Lora", Georgia, serif; --font-body: "Source Sans 3", -apple-system, "Segoe UI", Roboto, sans-serif; --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #1f1e1b; --bg-2: #272622; --bg-3: #33322c; --fg: #ebe8df; --fg-2: #a9a69b; --fg-3: #77756b; --line: #3a3933; --card: #262520;
+} }
+:root[data-theme="dark"] { --bg: #1f1e1b; --bg-2: #272622; --bg-3: #33322c; --fg: #ebe8df; --fg-2: #a9a69b; --fg-3: #77756b; --line: #3a3933; --card: #262520; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.55; display: flex; flex-direction: column; }
+button { font: inherit; background: none; border: 0; color: inherit; cursor: pointer; }
+header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: var(--bg-2); flex: none; }
+header .title { flex: 1; min-width: 0; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+header .sub { font-size: 12.5px; color: var(--fg-3); white-space: nowrap; }
+.tabs { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.tabs button { padding: 5px 12px; font-size: 13.5px; color: var(--fg-2); }
+.tabs button.on { background: var(--bg-3); color: var(--fg); }
+.btn { padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); font-size: 13.5px; color: var(--fg-2); background: var(--card); white-space: nowrap; }
+.btn:hover { color: var(--fg); }
+main { flex: 1; min-height: 0; position: relative; }
+#frame { width: 100%; height: 100%; border: 0; background: #fff; }
+#code { height: 100%; overflow: auto; margin: 0; }
+#code code { display: block; padding: 16px; font-family: var(--font-mono); font-size: 13px; line-height: 1.5; white-space: pre; }
+#md { height: 100%; overflow: auto; padding: 32px max(20px, calc((100% - 760px) / 2)) 80px; box-sizing: border-box; }
+.md h1, .md h2, .md h3, .md h4 { font-family: var(--font-display); font-weight: 500; line-height: 1.25; margin: 1.3em 0 .5em; }
+.md h1 { font-size: 30px; margin-top: 0; } .md h2 { font-size: 23px; } .md h3 { font-size: 18.5px; }
+.md p, .md ul, .md ol, .md blockquote { margin: 0 0 1em; }
+.md a { color: var(--accent); }
+.md code { font-family: var(--font-mono); font-size: .9em; background: var(--bg-3); padding: 1px 5px; border-radius: 5px; }
+.md pre { margin: 0 0 1em; border-radius: 10px; border: 1px solid var(--line); overflow: hidden; background: var(--card); }
+.md pre .codehead { display: flex; justify-content: space-between; padding: 6px 12px; font-size: 12px; color: var(--fg-3); border-bottom: 1px solid var(--line); }
+.md pre code { display: block; padding: 12px 14px; overflow-x: auto; background: transparent; font-size: 13.5px; line-height: 1.5; }
+.md blockquote { border-left: 3px solid var(--line); padding-left: 14px; color: var(--fg-2); }
+.md table { border-collapse: collapse; margin: 0 0 1em; display: block; overflow-x: auto; max-width: 100%; font-size: .95em; }
+.md th, .md td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
+.md th { background: var(--bg-2); }
+.md img { max-width: 100%; }
+.md hr { border: 0; border-top: 1px solid var(--line); margin: 1.6em 0; }
+#msg { padding: 40px 20px; text-align: center; color: var(--fg-2); }
+footer { flex: none; padding: 8px 16px; border-top: 1px solid var(--line); font-size: 12.5px; color: var(--fg-3); display: flex; gap: 8px; align-items: center; }
+footer a { color: var(--fg-2); }
+footer .sp { flex: 1; }
+.toast { position: fixed; left: 50%; bottom: 60px; transform: translateX(-50%); background: var(--fg); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 14px; z-index: 10; }
+[hidden] { display: none !important; }
+@media (max-width: 600px) { header .sub { display: none; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="title" id="title">Shared artifact</div>
+  <div class="sub" id="sub"></div>
+  <div class="tabs" id="tabs" hidden><button id="tabPreview" class="on">Preview</button><button id="tabCode">Code</button></div>
+  <button class="btn" id="copy" hidden>Copy</button>
+  <button class="btn" id="download" hidden>Download</button>
+</header>
+<main>
+  <div id="msg">Loading…</div>
+  <iframe id="frame" sandbox="allow-scripts allow-forms allow-modals allow-popups" title="Artifact preview" hidden></iframe>
+  <pre id="code" hidden><code></code></pre>
+  <div id="md" class="md" hidden></div>
+</main>
+<footer><span>Shared from Claude Chat · the whole artifact lives in this link, nothing is stored on a server.</span><span class="sp"></span><a href="./">Open the app</a></footer>
+<script>
+(() => {
+const $ = (s) => document.querySelector(s);
+const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+$("#hlLight").disabled = dark; $("#hlDark").disabled = !dark;
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function toast(t) { const n = document.createElement("div"); n.className = "toast"; n.textContent = t; document.body.appendChild(n); setTimeout(() => n.remove(), 1400); }
+function fail(t) { $("#msg").hidden = false; $("#msg").textContent = t; }
+
+async function decode(hash) {
+  const b64 = hash.replace(/-/g, "+").replace(/_/g, "/");
+  const bin = atob(b64 + "=".repeat((4 - (b64.length % 4)) % 4));
+  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+  return JSON.parse(await new Response(stream).text());
+}
+
+const renderer = new marked.Renderer();
+renderer.code = (a, b) => {
+  const text = (a && typeof a === "object") ? String(a.text ?? "") : String(a ?? "");
+  const lang = (a && typeof a === "object") ? a.lang : b;
+  const language = (lang || "").split(/\s/)[0];
+  let html;
+  try { html = language && hljs.getLanguage(language) ? hljs.highlight(text, { language }).value : hljs.highlightAuto(text).value; } catch { html = escapeHtml(text); }
+  return `<pre><div class="codehead"><span>${escapeHtml(language || "code")}</span></div><code class="hljs">${html}</code></pre>`;
+};
+function md(text) {
+  try { return DOMPurify.sanitize(marked.parse(text, { renderer, gfm: true }), { ADD_ATTR: ["target"] }); }
+  catch (e) { console.error(e); return `<pre style="white-space:pre-wrap">${escapeHtml(text)}</pre>`; }
+}
+function typeLabel(p) {
+  return { "text/html": "Web page", "image/svg+xml": "SVG image", "application/vnd.ant.react": "React component", "text/markdown": "Document" }[p.t] || `Code${p.l ? " · " + p.l : ""}`;
+}
+function previewDoc(p) {
+  if (p.t === "text/html") return p.c;
+  if (p.t === "image/svg+xml") return `<body style="margin:0;display:grid;place-items:center;min-height:100vh;background:#fff">${p.c}</body>`;
+  if (p.t === "application/vnd.ant.react") {
+    let src = p.c.replace(/^\s*import\s[^;]*;?\s*$/gm, "");
+    let name = "App";
+    src = src.replace(/export\s+default\s+function\s+(\w+)/, (_, n) => { name = n; return `function ${n}`; });
+    src = src.replace(/export\s+default\s+(\w+)\s*;?/, (_, n) => { name = n; return ""; });
+    src = src.replace(/export\s+(const|function|class)\s/g, "$1 ");
+    return `<!doctype html><html><head><meta charset="utf-8">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"><\/script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"><\/script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js"><\/script>
+<script src="https://cdn.tailwindcss.com/3.4.17"><\/script>
+<style>body{margin:0;font-family:system-ui,sans-serif}#err{color:#b00020;font-family:monospace;white-space:pre-wrap;padding:12px}</style>
+</head><body><div id="root"></div><pre id="err"></pre>
+<script type="text/babel" data-presets="react">
+const {useState,useEffect,useRef,useMemo,useCallback,useReducer,useContext,createContext,Fragment}=React;
+try {
+${src}
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(${name}));
+} catch(e){ document.getElementById('err').textContent = String(e && e.stack || e); }
+<\/script>
+<script>window.addEventListener('error',e=>{document.getElementById('err').textContent=String(e.message)})<\/script>
+</body></html>`;
+  }
+  return `<pre>${escapeHtml(p.c)}</pre>`;
+}
+
+let p = null, tab = "preview";
+function show() {
+  $("#tabPreview").classList.toggle("on", tab === "preview");
+  $("#tabCode").classList.toggle("on", tab === "code");
+  $("#frame").hidden = $("#code").hidden = $("#md").hidden = true;
+  if (tab === "code") {
+    $("#code").hidden = false;
+    const c = $("#code code");
+    const lang = p.t === "text/html" ? "html" : p.t === "image/svg+xml" ? "xml" : p.t === "application/vnd.ant.react" ? "javascript" : p.t === "text/markdown" ? "markdown" : p.l;
+    try { c.innerHTML = lang && hljs.getLanguage(lang) ? hljs.highlight(p.c, { language: lang }).value : hljs.highlightAuto(p.c).value; } catch { c.textContent = p.c; }
+    c.className = "hljs";
+  } else if (p.t === "text/markdown") {
+    $("#md").hidden = false; $("#md").innerHTML = md(p.c);
+  } else {
+    $("#frame").hidden = false; $("#frame").srcdoc = previewDoc(p);
+  }
+}
+
+async function boot() {
+  const hash = location.hash.slice(1);
+  if (!hash) return fail("This link has no artifact in it.");
+  if (!("DecompressionStream" in window)) return fail("Your browser is too old to open this link. Try a current Chrome, Safari, Firefox or Edge.");
+  try { p = await decode(hash); } catch (e) { console.error(e); return fail("This link is damaged or incomplete. Ask for it to be sent again, ideally as a single line."); }
+  if (!p || typeof p.c !== "string") return fail("This link doesn't contain a readable artifact.");
+  $("#msg").hidden = true;
+  document.title = p.n || "Shared artifact";
+  $("#title").textContent = p.n || "Untitled";
+  $("#sub").textContent = typeLabel(p);
+  const previewable = ["text/html", "image/svg+xml", "application/vnd.ant.react", "text/markdown"].includes(p.t);
+  $("#tabs").hidden = !previewable; if (!previewable) tab = "code";
+  $("#copy").hidden = $("#download").hidden = false;
+  show();
+}
+$("#tabPreview").onclick = () => { tab = "preview"; show(); };
+$("#tabCode").onclick = () => { tab = "code"; show(); };
+$("#copy").onclick = () => navigator.clipboard?.writeText(p.c).then(() => toast("Copied source"));
+$("#download").onclick = () => {
+  const ext = { "text/html": "html", "image/svg+xml": "svg", "application/vnd.ant.react": "jsx", "text/markdown": "md" }[p.t] || ({ python: "py", javascript: "js", typescript: "ts", go: "go", rust: "rs", java: "java", c: "c", cpp: "cpp", html: "html", css: "css", json: "json", bash: "sh", shell: "sh" }[p.l] || "txt");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([p.c], { type: "text/plain" }));
+  a.download = (p.n || "artifact").replace(/[^\w.-]+/g, "-").replace(/^-|-$/g, "") + "." + ext;
+  a.click(); URL.revokeObjectURL(a.href);
+};
+addEventListener("hashchange", boot);
+boot();
+})();
+</script>
+</body>
+</html>

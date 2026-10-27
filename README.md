@@ -45,6 +45,10 @@ Don't add your key as a GitHub secret for this mode. A static site can't keep se
 
 The system prompt tells the model to wrap substantial deliverables in `<artifact type="..." title="...">…</artifact>` tags. The UI pulls those out of the reply, shows a card inline, and renders them in the right-hand panel: HTML and SVG in a sandboxed iframe, React (JSX) via React 18 + Babel standalone + Tailwind loaded from CDN, markdown rendered, everything else as highlighted code. Copy and download buttons are in the panel header.
 
+## Sharing artifacts
+
+The share button in the artifact panel copies a public link. The artifact is compressed and base64-encoded into the URL fragment of `share.html`, which renders it for anyone who opens it. Nothing is uploaded or stored: the link *is* the artifact, so it works on the static GitHub Pages deployment too. Long documents produce long links (a 15 KB document is roughly a 7 KB URL); browsers handle this fine, but some chat apps truncate very long URLs, in which case send it as a file or use Download instead.
+
 ## Settings
 
 Gear icon → system prompt, API key (direct mode), app password. Model, effort (`low`→`max`), max tokens and "show thinking" are in the top bar / composer. Chats are stored in localStorage; "Delete all chats" is in settings.
