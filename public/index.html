@@ -442,7 +442,10 @@ applyTheme();
 /* ---------- markdown ---------- */
 marked.setOptions({ gfm: true, breaks: false });
 const renderer = new marked.Renderer();
-renderer.code = ({ text, lang }) => {
+renderer.code = (a, b) => {
+  // marked v12 passes (code, infostring); v13+ passes ({ text, lang }). Support both.
+  const text = (a && typeof a === "object") ? String(a.text ?? "") : String(a ?? "");
+  const lang = (a && typeof a === "object") ? a.lang : b;
   const language = (lang || "").split(/\s/)[0];
   let html;
   try { html = language && hljs.getLanguage(language) ? hljs.highlight(text, { language }).value : hljs.highlightAuto(text).value; }
@@ -451,8 +454,13 @@ renderer.code = ({ text, lang }) => {
 };
 function escapeHtml(s) { return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 function md(text) {
-  const raw = marked.parse(text, { renderer });
-  return DOMPurify.sanitize(raw, { ADD_ATTR: ["data-copy", "target"] });
+  try {
+    const raw = marked.parse(text, { renderer });
+    return DOMPurify.sanitize(raw, { ADD_ATTR: ["data-copy", "target"] });
+  } catch (e) {
+    console.error("markdown render failed", e);
+    return `<pre style="white-space:pre-wrap">${escapeHtml(text)}</pre>`;
+  }
 }
 document.addEventListener("click", (e) => {
   const b = e.target.closest("button[data-copy]");
